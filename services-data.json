@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1,
+    "slug": "corte-tradicional",
+    "category": "cabelo",
+    "name": "Corte Tradicional",
+    "desc": "Acabamento clássico com tesoura e máquina.",
+    "price": "R$ 45"
+  },
+  {
+    "id": 2,
+    "slug": "corte-degrade",
+    "category": "cabelo",
+    "name": "Corte Degradê",
+    "desc": "Fade limpo e moderno, acabamento detalhado.",
+    "price": "R$ 55"
+  },
+  {
+    "id": 3,
+    "slug": "corte-navalhado",
+    "category": "cabelo",
+    "name": "Corte Navalhado",
+    "desc": "Acabamento à navalha para maior precisão.",
+    "price": "R$ 50"
+  },
+  {
+    "id": 4,
+    "slug": "corte-infantil",
+    "category": "cabelo",
+    "name": "Corte Infantil",
+    "desc": "Corte especial para crianças com cuidado extra.",
+    "price": "R$ 35"
+  },
+  {
+    "id": 5,
+    "slug": "barba-completa",
+    "category": "barba",
+    "name": "Barba Completa",
+    "desc": "Modelagem, navalha e toalha quente.",
+    "price": "R$ 40"
+  },
+  {
+    "id": 6,
+    "slug": "sobrancelha",
+    "category": "barba",
+    "name": "Sobrancelha",
+    "desc": "Limpeza e alinhamento natural.",
+    "price": "R$ 20"
+  },
+  {
+    "id": 7,
+    "slug": "pigmentacao-de-barba",
+    "category": "barba",
+    "name": "Pigmentação de Barba",
+    "desc": "Definição e correção para aparência mais cheia.",
+    "price": "R$ 60"
+  },
+  {
+    "id": 8,
+    "slug": "corte-barba",
+    "category": "combos",
+    "name": "Corte + Barba",
+    "desc": "Combo completo para renovar o visual.",
+    "price": "R$ 70"
+  },
+  {
+    "id": 9,
+    "slug": "black-mask-barba",
+    "category": "combos",
+    "name": "Black Mask + Barba",
+    "desc": "Tratamento de pele + barba alinhada.",
+    "price": "R$ 55"
+  },
+  {
+    "id": 10,
+    "slug": "corte-hidratacao",
+    "category": "combos",
+    "name": "Corte + Hidratação",
+    "desc": "Corte + tratamento capilar completo.",
+    "price": "R$ 80"
+  }
+]
