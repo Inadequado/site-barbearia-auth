@@ -1,0 +1,21 @@
+node_modules
+dist
+.git
+.gitignore
+.env
+.env.*
+*.log
+.vscode
+.idea
+.DS_Store
+
+# Nunca copia segredos ou estados locais
+data/users.json
+
+# Documentação que não precisa rodar
+README.md
+reference
+.code-review-graph
+
+# Plugin antigo (não usado mais em produção)
+plugins/adminPlugin.ts
