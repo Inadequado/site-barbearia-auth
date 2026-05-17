@@ -26,8 +26,8 @@ export function adminPlugin(): Plugin {
     apply: 'serve',
     configureServer(server) {
       const root = process.cwd();
-      const configPath = resolve(root, 'site-config.json');
-      const servicesPath = resolve(root, 'services-data.json');
+      const configPath = resolve(root, './data/site-config.json');
+      const servicesPath = resolve(root, './data/services-data.json');
 
       server.middlewares.use(async (req, res, next) => {
         if (!req.url?.startsWith('/api/admin/')) { next(); return; }

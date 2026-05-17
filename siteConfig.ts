@@ -1,4 +1,4 @@
-import raw from './site-config.json';
+import raw from './data/site-config.json';
 
 export interface CategoryConfig {
   id: string;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState, useEffect } from "react";
 import { SITE_CONFIG, type CategoryConfig } from "../siteConfig";
 import { SERVICES, type Service } from "../services";
 
@@ -14,7 +14,7 @@ function slugify(text: string): string {
   return text
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 }
@@ -23,6 +23,13 @@ export default function AdminDrawer() {
   const [adminOpen, setAdminOpen] = useState(false);
   const [adminLoggedIn, setAdminLoggedIn] = useState(false);
   const [adminTab, setAdminTab] = useState<AdminTab>("home");
+
+  // Login state
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [loggingIn, setLoggingIn] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(false);
 
   // Home
   const [heroLine1, setHeroLine1] = useState(SITE_CONFIG.heroLine1);
@@ -46,6 +53,70 @@ export default function AdminDrawer() {
 
   const activeCategories = categories.filter((c) => c.active);
 
+  // Quando o painel abre, verifica se já existe sessão válida
+  useEffect(() => {
+    if (!adminOpen) return;
+    if (adminLoggedIn) return;
+
+    setCheckingSession(true);
+    fetch("/api/auth/me", { credentials: "same-origin" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated) setAdminLoggedIn(true);
+      })
+      .catch(() => {
+        // sem rede ou backend offline — deixa o usuário digitar manualmente
+      })
+      .finally(() => setCheckingSession(false));
+  }, [adminOpen, adminLoggedIn]);
+
+  const handleLogin = async () => {
+    if (!username.trim() || !password) {
+      setLoginError("Preencha usuário e senha.");
+      return;
+    }
+    setLoggingIn(true);
+    setLoginError("");
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ username: username.trim(), password }),
+      });
+
+      if (res.ok) {
+        setAdminLoggedIn(true);
+        setPassword(""); // limpa a senha da memória
+      } else if (res.status === 429) {
+        setLoginError("Muitas tentativas. Tente novamente em alguns minutos.");
+      } else if (res.status === 401) {
+        setLoginError("Usuário ou senha inválidos.");
+      } else {
+        setLoginError("Erro ao entrar. Tente novamente.");
+      }
+    } catch {
+      setLoginError("Sem conexão com o servidor.");
+    } finally {
+      setLoggingIn(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+    } catch {
+      // ignora erro de rede no logout — o cookie expira sozinho
+    }
+    setAdminLoggedIn(false);
+    setUsername("");
+    setPassword("");
+    setAdminOpen(false);
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setSaveMsg("");
@@ -67,13 +138,20 @@ export default function AdminDrawer() {
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify(body),
       });
+
+      if (res.status === 401) {
+        setAdminLoggedIn(false);
+        setSaveMsg("Sessão expirada. Faz login de novo.");
+        return;
+      }
 
       if (!res.ok) throw new Error("Resposta inválida do servidor");
       setSaveMsg("Salvo com sucesso!");
     } catch {
-      setSaveMsg("Erro ao salvar. Servidor de desenvolvimento ativo?");
+      setSaveMsg("Erro ao salvar. Verifique se o backend está rodando.");
     } finally {
       setSaving(false);
       setTimeout(() => setSaveMsg(""), 3500);
@@ -144,35 +222,66 @@ export default function AdminDrawer() {
                 <p className="admin-kicker">Painel</p>
                 <h2>Configuração visual</h2>
               </div>
-              <button
-                type="button"
-                className="admin-close"
-                aria-label="Fechar painel"
-                onClick={() => setAdminOpen(false)}
-              >
-                ×
-              </button>
+              <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                {adminLoggedIn && (
+                  <button
+                    type="button"
+                    className="admin-ghost"
+                    onClick={handleLogout}
+                  >
+                    Sair
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="admin-close"
+                  aria-label="Fechar painel"
+                  onClick={() => setAdminOpen(false)}
+                >
+                  ×
+                </button>
+              </div>
             </div>
 
-            {!adminLoggedIn ? (
+            {checkingSession ? (
+              <div className="admin-login">
+                <p className="admin-note">Verificando sessão...</p>
+              </div>
+            ) : !adminLoggedIn ? (
               <div className="admin-login">
                 <label>
-                  Usuário ou e-mail
-                  <input type="text" placeholder="admin@barbearia.com" />
+                  Usuário
+                  <input
+                    type="text"
+                    placeholder="admin"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleLogin(); }}
+                    autoComplete="username"
+                  />
                 </label>
                 <label>
                   Senha
-                  <input type="password" placeholder="••••••••" />
+                  <input
+                    type="password"
+                    placeholder="•••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleLogin(); }}
+                    autoComplete="current-password"
+                  />
                 </label>
+                {loginError && <p className="admin-note" style={{ color: "#c33" }}>{loginError}</p>}
                 <button
                   type="button"
                   className="admin-primary"
-                  onClick={() => setAdminLoggedIn(true)}
+                  onClick={handleLogin}
+                  disabled={loggingIn}
                 >
-                  Entrar
+                  {loggingIn ? "Entrando..." : "Entrar"}
                 </button>
                 <p className="admin-note">
-                  Painel local. Salvar reescreve os arquivos do projeto diretamente.
+                  Acesso restrito. Salvar reescreve os arquivos do projeto.
                 </p>
               </div>
             ) : (
@@ -190,7 +299,7 @@ export default function AdminDrawer() {
                   ))}
                 </div>
 
-                {/* ── HOME ── */}
+                {/* â”€â”€ HOME â”€â”€ */}
                 {adminTab === "home" && (
                   <div className="admin-section">
                     <label>
@@ -220,7 +329,7 @@ export default function AdminDrawer() {
                   </div>
                 )}
 
-                {/* ── CATEGORIAS ── */}
+                {/* â”€â”€ CATEGORIAS â”€â”€ */}
                 {adminTab === "categories" && (
                   <div className="admin-section">
                     <div className="admin-list">
@@ -264,7 +373,7 @@ export default function AdminDrawer() {
                   </div>
                 )}
 
-                {/* ── SERVIÇOS ── */}
+                {/* â”€â”€ SERVIÃ‡OS â”€â”€ */}
                 {adminTab === "services" && (
                   <div className="admin-section">
                     {categories.map((cat) => {

@@ -1,4 +1,4 @@
-import servicesData from './services-data.json';
+import servicesData from './data/services-data.json';
 
 export type ServiceCategory = string;
 

@@ -1,7 +1,6 @@
 import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { adminPlugin } from './plugins/adminPlugin';
 
 export default defineConfig({
   server: {
@@ -9,9 +8,15 @@ export default defineConfig({
     host: '0.0.0.0',
     allowedHosts: [
       "noncognizant-milania-untamely.ngrok-free.dev"
-    ]
+    ],
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+    },
   },
-  plugins: [react(), adminPlugin()],
+  plugins: [react()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, '.'),
