@@ -4,12 +4,14 @@ import { gsap } from "gsap";
 import AdminDrawer from "./AdminDrawer";
 import { SERVICES } from "../services";
 import { SITE_CONFIG } from "../siteConfig";
+import { useDataVersion } from "../dataLoader";
 import type { Service } from "../services";
 import "../styles-home.css";
 
 type View = "home" | "services";
 
 export default function HomePage() {
+  useDataVersion(); // re-renderiza quando os dados forem atualizados pelo admin
   const navigate = useNavigate();
   const [view, setView] = useState<View>("home");
   const [filter, setFilter] = useState<string>("all");

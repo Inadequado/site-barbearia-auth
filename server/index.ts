@@ -3,6 +3,8 @@ import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { z } from 'zod';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { login, logout, me } from './auth.js';
 import { adminRoutes } from './routes.js';
 
@@ -11,6 +13,28 @@ const app = new Hono();
 const loginSchema = z.object({
   username: z.string().min(1).max(50),
   password: z.string().min(1).max(200),
+});
+
+const configPath = resolve(process.cwd(), 'data', 'site-config.json');
+const servicesPath = resolve(process.cwd(), 'data', 'services-data.json');
+
+// --- Rotas públicas (leitura dos JSONs do site) ---
+app.get('/api/public/site-config', (c) => {
+  try {
+    const data = JSON.parse(readFileSync(configPath, 'utf-8'));
+    return c.json(data);
+  } catch (e) {
+    return c.json({ error: 'Falha ao ler site-config' }, 500);
+  }
+});
+
+app.get('/api/public/services', (c) => {
+  try {
+    const data = JSON.parse(readFileSync(servicesPath, 'utf-8'));
+    return c.json(data);
+  } catch (e) {
+    return c.json({ error: 'Falha ao ler services' }, 500);
+  }
 });
 
 // --- Autenticação ---

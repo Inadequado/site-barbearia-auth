@@ -1,4 +1,4 @@
-import servicesData from './data/services-data.json';
+import { getServices } from "./dataLoader";
 
 export type ServiceCategory = string;
 
@@ -11,14 +11,25 @@ export interface Service {
   price: string;
 }
 
-export const SERVICES: Service[] = servicesData as Service[];
+// SERVICES é um Proxy de array: indexação, .find, .filter, .map, .length — tudo funciona.
+// A cada acesso ele lê do dataLoader (que tem os dados atuais).
+export const SERVICES: Service[] = new Proxy([] as Service[], {
+  get(_target, prop) {
+    const arr = getServices();
+    const value = (arr as unknown as Record<string | symbol, unknown>)[prop];
+    return typeof value === "function" ? (value as Function).bind(arr) : value;
+  },
+  has(_target, prop) {
+    return prop in getServices();
+  },
+});
 
 export function getServiceBySlug(slug: string | null | undefined): Service | null {
   if (!slug) return null;
-  return SERVICES.find((service) => service.slug === slug) ?? null;
+  return getServices().find((service) => service.slug === slug) ?? null;
 }
 
 export function getServiceByName(name: string | null | undefined): Service | null {
   if (!name) return null;
-  return SERVICES.find((service) => service.name === name) ?? null;
+  return getServices().find((service) => service.name === name) ?? null;
 }

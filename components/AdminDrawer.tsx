@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect } from "react";
 import { SITE_CONFIG, type CategoryConfig } from "../siteConfig";
 import { SERVICES, type Service } from "../services";
+import { loadAllData } from "../dataLoader";
 
 type AdminTab = "home" | "categories" | "services";
 
@@ -149,6 +150,7 @@ export default function AdminDrawer() {
       }
 
       if (!res.ok) throw new Error("Resposta inválida do servidor");
+      await loadAllData(); // recarrega dados e dispara re-render dos componentes
       setSaveMsg("Salvo com sucesso!");
     } catch {
       setSaveMsg("Erro ao salvar. Verifique se o backend está rodando.");
